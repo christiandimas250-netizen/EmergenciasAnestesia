@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Crisis Anestesia</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --secondary: #00b4d8;
+            --danger: #e63946;
+            --warning: #ffb703;
+            --success: #2a9d8f;
+            --dark: #1d3557;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --gray: #6c757d;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: var(--light); color: var(--dark); overscroll-behavior: none; }
+
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 18px 16px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 16px;
+            color: var(--white);
+            font-size: 1.5rem;
+            text-decoration: none;
+            display: none;
+            cursor: pointer;
+        }
+
+        /* Home Grid */
+        #home-view {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .emergency-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 5px solid var(--color);
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .emergency-card:active { transform: scale(0.96); }
+        .emergency-card .icon { font-size: 2.5rem; }
+        .emergency-card .title { font-size: 0.95rem; font-weight: 700; color: var(--dark); line-height: 1.2; }
+
+        .home-footer { grid-column: 1 / -1; margin-top: 30px; text-align: center; padding: 0 10px; }
+        .home-footer .disclaimer { font-size: 0.75rem; color: var(--gray); line-height: 1.5; margin-bottom: 20px; font-style: italic; }
+        .home-footer .signature { font-size: 0.6rem; color: #d3d3d3; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Detail View */
+        #detail-view { display: none; padding: 16px; padding-bottom: 100px; animation: slideIn 0.3s ease; }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin: 20px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 4px;
+            display: inline-block;
+        }
+
+        .diagnosis-box { background: var(--white); border-left: 4px solid var(--secondary); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; font-size: 0.95rem; }
+        .diagnosis-box ul { padding-left: 20px; margin-top: 8px; }
+        .diagnosis-box li { margin-bottom: 4px; }
+
+        .step-card { background: var(--white); border-radius: 8px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+        .step-number { background: var(--primary); color: white; width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 0.8rem; font-weight: bold; margin-right: 8px; }
+        .step-header { display: flex; align-items: center; font-weight: 700; margin-bottom: 8px; font-size: 1.05rem; }
+        .step-content { font-size: 0.95rem; color: #4a4a4a; line-height: 1.4; margin-left: 32px; }
+        .step-content ul { padding-left: 16px; }
+        .step-content li { margin-bottom: 6px; }
+
+        .drug-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; margin-left: 32px;}
+        .drug-item { background: #e9ecef; padding: 8px 12px; border-radius: 6px; border-left: 3px solid var(--primary); font-size: 0.9rem; }
+        .drug-name { font-weight: 700; color: var(--dark); display: block; }
+        .drug-dose { color: var(--danger); font-weight: 600; }
+
+        .alert-box { background: #ffe3e3; border-left: 5px solid var(--danger); color: #a10000; padding: 12px; border-radius: 6px; margin: 15px 0; font-weight: 600; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 10px; }
+        .warning-box { background: #fff3cd; border-left: 5px solid var(--warning); color: #856404; padding: 12px; border-radius: 6px; margin: 15px 0; font-weight: 600; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 10px; }
+        .alert-icon { font-size: 1.2rem; line-height: 1; }
+
+        .checklist-item { display: flex; align-items: flex-start; background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .checklist-item input[type="checkbox"] { margin-right: 12px; margin-top: 3px; width: 20px; height: 20px; accent-color: var(--success); }
+        .checklist-item label { font-size: 0.95rem; font-weight: 500; color: var(--dark); flex: 1; transition: all 0.2s; }
+        .checklist-item input[type="checkbox"]:checked + label { text-decoration: line-through; color: var(--gray); }
+
+        /* FAB Button */
+        .fab-container { position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 90; display: none; }
+        .fab { background: var(--danger); color: white; border: none; width: 100%; padding: 16px; border-radius: 30px; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; box-shadow: 0 4px 15px rgba(230, 57, 70, 0.5); cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; animation: pulse 2s infinite; }
+        .fab:active { transform: scale(0.98); }
+
+        /* Modal */
+        #immediate-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.2s; }
+        .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 12px; padding: 20px; border-top: 8px solid var(--danger); box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; }
+        .modal-title { color: var(--danger); font-size: 1.3rem; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .modal-steps { font-size: 1.1rem; font-weight: 600; line-height: 1.5; }
+        .modal-steps li { margin-bottom: 12px; padding-left: 24px; position: relative; }
+        .modal-steps li::before { content: "⚡"; position: absolute; left: 0; top: 0; }
+        .close-modal { background: #eee; border: none; width: 100%; padding: 12px; border-radius: 8px; margin-top: 20px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(230, 57, 70, 0); } 100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <span class="back-btn" id="back-btn">←</span>
+        <span id="header-title">Crisis Anestesia</span>
+    </header>
+
+    <div id="home-view">
+        <!-- Generado dinámicamente -->
+    </div>
+
+    <div id="detail-view">
+        <!-- Generado dinámicamente -->
+    </div>
+
+    <div class="fab-container" id="fab-container">
+        <button class="fab" id="fab-btn">🚨 Acción Inmediata</button>
+    </div>
+
+    <div id="immediate-modal">
+        <div class="modal-content">
+            <div class="modal-title"><span>⏳</span> Primeros 60 Segundos</div>
+            <ul class="modal-steps" id="modal-steps"></ul>
+            <button class="close-modal" id="close-modal">Cerrar / Continuar Algoritmo</button>
+        </div>
+    </div>
+
+    <script>
+        const db = {
+            broncoespasmo: {
+                title: "Broncoespasmo", icon: "🫁", color: "#00b4d8",
+                diagnosis: ["Aumento de presión máxima en vía aérea", "Sibilancias a la auscultación", "Capnografía con patrón obstructivo (aleta de tiburón)", "Desaturación y dificultad ventilatoria"],
+                immediate: [
+                    "Cambiar a FiO2 100%",
+                    "Ventilar manualmente para sentir distensibilidad",
+                    "Detener agentes sospechosos (β-bloqueadores, AINEs, relajantes, látex, antibióticos)",
+                    "Pedir ayuda"
+                ],
+                steps: [
+                    { title: "Manejo Inmediato", content: "<ul><li>Profundizar anestesia: Volátiles > Ketamina > Propofol.</li><li>Descartar causas mecánicas: IOT selectiva, tubo acodado, secreciones, neumotórax.</li><li>Evitar hiperinsuflación dinámica: Aumentar tiempo espiratorio, FR baja/normal.</li></ul>" },
+                    { title: "Terapia de Primera Línea", content: "Administrar agonistas β2 de acción corta.", drugs: [
+                        { name: "Salbutamol (Inhalador)", dose: "6-8 puffs repetidos según necesidad" },
+                        { name: "Salbutamol (Nebulizado)", dose: "5 mg repetidos según necesidad" },
+                        { name: "Salbutamol (IV)", dose: "250 mcg IV lento, seguido de infusión 5-20 mcg/min" }
+                    ]},
+                    { title: "Terapia de Segunda Línea", content: "Si no hay respuesta adecuada, escalar terapia.", drugs: [
+                        { name: "Bromuro de Ipratropio", dose: "4-8 puffs o 0.5 mg nebulizado c/6 hrs" },
+                        { name: "Sulfato de Magnesio", dose: "50 mg/kg IV en 20 min (máx 2 g)" },
+                        { name: "Hidrocortisona", dose: "200 mg IV c/6 hrs" },
+                        { name: "Metilprednisolona", dose: "125 mg IV" },
+                        { name: "Ketamina", dose: "Bolo 10-20 mg, Infusión 1-3 mg/kg/hr" },
+                        { name: "Epinefrina", dose: "Nebulizada: 5 mL 1:1000. IV: 10 a 100 mcg titulada." }
+                    ]}
+                ],
+                alerts: [
+                    { type: "danger", text: "Si el paciente no puede ser ventilado en absoluto y la saturación cae rápidamente, considere anafilaxia o neumotórax a tensión." }
+                ],
+                checklist: ["FiO2 100% y ventilación manual", "Ayuda solicitada", "Se descartó tubo acodado/intubación bronquial", "Salbutamol administrado", "Anestesia profundizada"]
+            },
+            laringoespasmo: {
+                title: "Laringoespasmo", icon: "🤐", color: "#6a4c93",
+                diagnosis: ["Estridor inspiratorio", "Ausencia de ventilación / incapacidad para ventilar a presión positiva", "Movimientos torácicos paradójicos", "Desaturación progresiva"],
+                immediate: [
+                    "Identificar y retirar el estímulo quirúrgico o secreciones",
+                    "Levantar el mentón y tracción mandibular (Jaw thrust)",
+                    "Subluxación temporomandibular",
+                    "CPAP suave con FiO2 100%"
+                ],
+                steps: [
+                    { title: "1. Desobstrucción y Ventilación", content: "<ul><li>Aplicar tracción mandibular enérgica.</li><li>Aplicar presión positiva continua (CPAP) con mascarilla al 100% O2.</li><li>Evaluar entrada de aire (movimiento de la bolsa).</li></ul>" },
+                    { title: "2. Presión Torácica", content: "Si no hay movimiento de aire: <ul><li>Aplicar presión torácica suave (Maniobra de Larson - presión en la muesca laringoespástica).</li></ul>" },
+                    { title: "3. Terapia Farmacológica", content: "Si persisten signos de cierre de cuerdas vocales, administrar fármacos.", drugs: [
+                        { name: "Propofol", dose: "0.5 mg/kg IV (Para profundizar anestesia si hay mínima entrada)" },
+                        { name: "Succinilcolina (Relajación total)", dose: "IV: 0.1 - 2 mg/kg. IM o intralingual: 4 mg/kg" },
+                        { name: "Atropina (Si hay bradicardia)", dose: "10-20 mcg/kg IV" }
+                    ]},
+                    { title: "4. Rescate de Vía Aérea", content: "Si la saturación no aumenta tras relajación: <ul><li>Intubación orotraqueal inmediata.</li><li>Si es imposible: Cricotiroidotomía o Traqueostomía.</li></ul>" }
+                ],
+                alerts: [
+                    { type: "danger", text: "La hipoxia profunda causa bradicardia y paro cardíaco rápidamente en pacientes pediátricos." },
+                    { type: "warning", text: "Observación estricta en URPA para descartar edema pulmonar por presión negativa." }
+                ],
+                checklist: ["Retirar estímulo", "Tracción mandibular + CPAP 100% O2", "Propofol administrado (si procede)", "Succinilcolina lista/administrada", "Atropina evaluada"]
+            },
+            hipertermia: {
+                title: "Hipertermia Maligna", icon: "🔥", color: "#e63946",
+                diagnosis: ["Aumento súbito/inexplicable de ETCO2 (signo más temprano)", "Taquicardia y arritmias", "Rigidez muscular (masetero)", "Aumento rápido de temperatura central (>38.5°C, tardío)"],
+                immediate: [
+                    "DETENER todos los agentes desencadenantes (Volátiles y Succinilcolina)",
+                    "Pedir ayuda urgente y notificar al cirujano (abandonar/terminar cirugía rápido)",
+                    "Hiperventilar con FiO2 100%",
+                    "Solicitar carro de Hipertermia Maligna (Dantroleno)"
+                ],
+                steps: [
+                    { title: "1. Detener Gatillos y Ventilar", content: "<ul><li>Apagar vaporizadores. NO perder tiempo cambiando el circuito si retrasa la ventilación.</li><li>Aumentar flujo de gas fresco al máximo (>10 L/min).</li><li>Mantener anestesia con agentes IV (TIVA).</li></ul>" },
+                    { title: "2. Administración de Dantroleno", content: "Administrar inmediatamente, es el único antídoto.", drugs: [
+                        { name: "Dantroleno", dose: "Bolo inicial: 2.5 mg/kg IV rápido. Repetir bolos de 1 mg/kg según necesidad (hasta 10 mg/kg) hasta alcanzar metas." }
+                    ]},
+                    { title: "3. Enfriamiento Activo y Control", content: "<ul><li>Iniciar enfriamiento: compresas de hielo en axilas/ingles, líquidos IV fríos, lavado gástrico/vesical frío.</li><li>Evitar vasoconstricción periférica.</li><li>Metas: ETCO2 < 6 kPa, Temp < 38.5°C, Ventilación normal.</li></ul>" }
+                ],
+                alerts: [
+                    { type: "danger", text: "NUNCA combine Dantroleno con bloqueadores de canales de calcio (Verapamilo, Diltiazem) -> Riesgo de hiperkalemia fatal." }
+                ],
+                checklist: ["Agentes volátiles apagados", "Cirujano notificado", "FiO2 100% y flujos altos", "Dantroleno 2.5 mg/kg administrado", "Enfriamiento iniciado"]
+            },
+            last: {
+                title: "Toxicidad Sistémica (LAST)", icon: "💉", color: "#ffb703",
+                diagnosis: ["Pinchazo accidental intravascular de AL", "Signos SNC: Sabor metálico, tinnitus, agitación, convulsiones", "Signos CV: Hipotensión inexplicada, bradicardia, arritmias, paro"],
+                immediate: [
+                    "DETENER la inyección del anestésico local",
+                    "Pedir ayuda y solicitar KIT DE RESCATE LAST (Emulsión Lipídica)",
+                    "Manejo de vía aérea (100% O2) y soporte ventilatorio",
+                    "Controlar convulsiones y dar soporte cardiovascular"
+                ],
+                steps: [
+                    { title: "1. Soporte Vital Avanzado Modificado", content: "<ul><li>Ventilar con FiO2 100%. EVITAR hiperventilación.</li><li>Control de convulsiones: Preferir Benzodiacepinas. EVITAR grandes dosis de Propofol (depresión CV).</li><li>Avisar al equipo de Bypass Cardiopulmonar.</li></ul>" },
+                    { title: "2. Terapia CV Específica", content: "Diferente al ACLS tradicional:", drugs: [
+                        { name: "Epinefrina", dose: "Reducir bolos a ≤ 1 mcg/kg (microdosis)." },
+                        { name: "EVITAR", dose: "Vasopresina, bloqueadores de canales de calcio, beta bloqueadores y otros AL." }
+                    ]},
+                    { title: "3. Emulsión Lipídica (20%)", content: "Pilar del tratamiento. Aplicar tan pronto como sea posible.", drugs: [
+                        { name: "Pacientes > 70 kg", dose: "Bolo: 100 mL en 2-3 min. Infusión: 200-250 mL en 15-20 min." },
+                        { name: "Pacientes < 70 kg", dose: "Bolo: 1.5 mL/kg en 2-3 min. Infusión: 0.25 mL/kg/min." },
+                        { name: "Dosis Máxima", dose: "12 mL/kg en total. (Re-bolo 1-2 veces si sigue inestable y duplicar infusión)." }
+                    ]}
+                ],
+                alerts: [
+                    { type: "danger", text: "No exceda 12 mL/kg de emulsión lipídica. El tratamiento farmacológico es diferente al paro cardíaco estándar (¡No use vasopresina ni adrenalina a dosis altas!)." }
+                ],
+                checklist: ["Inyección detenida", "Ayuda y Kit LAST solicitados", "FiO2 100% administrada", "Emulsión Lipídica 20% en infusión", "Se evitaron dosis altas de adrenalina/propofol"]
+            },
+            paro: {
+                title: "Paro Cardíaco (Qx)", icon: "❤️‍🩹", color: "#d63031",
+                diagnosis: ["Ausencia de pulso", "Caída súbita e inexplicable del ETCO2 (<10 mmHg)", "Línea isoeléctrica, FV o TV sin pulso en monitor"],
+                immediate: [
+                    "Avisar al cirujano (¡DETENER CIRUGÍA!)",
+                    "Pedir ayuda y solicitar Desfibrilador",
+                    "Suspender anestésicos (¡TODOS!) y abrir líquidos IV",
+                    "FiO2 100%, asegurar vía aérea, EVITAR HIPERVENTILACIÓN"
+                ],
+                steps: [
+                    { title: "1. Iniciar RCP y Evaluar Ritmo", content: "<ul><li>Compresiones alta calidad: 100-120 lpm. Presión arterial diastólica >40 mmHg.</li><li>Determinar si es Desfibrilable (FV / TV sin pulso) o No Desfibrilable (Asistolia / AESP).</li></ul>" },
+                    { title: "2. Ritmo Desfibrilable (FV/TV)", content: "Descarga prioritaria.", drugs: [
+                        { name: "Desfibrilar", dose: "Dosis máxima. Reiniciar RCP inmediato por 2 min." },
+                        { name: "Adrenalina", dose: "100 a 1000 mcg IV c/3-5 min." },
+                        { name: "Antiarrítmicos (Refractario)", dose: "Amiodarona 300 mg IV bolo, o Lidocaína 1 a 1.5 mg/kg IV. MgSO4 2g IV en QT largo." }
+                    ]},
+                    { title: "3. Ritmo No Desfibrilable (Asistolia/AESP)", content: "Buscar causas reversibles (4Hs y 4Ts).", drugs: [
+                        { name: "RCP Alta Calidad", dose: "Continuar ciclos de 2 min." },
+                        { name: "Adrenalina", dose: "100 a 1000 mcg IV c/3-5 min." },
+                        { name: "Vasopresina", dose: "40 UI IV (puede sustituir adrenalina en hipovolemia)." },
+                        { name: "Gluconato de Calcio", dose: "1 gr IV (Considerar en Hiperkalemia)." }
+                    ]},
+                    { title: "4. Causas Específicas Quirófano", content: "<ul><li>¿Hipervagal? ¿Hipovolemia profunda? ¿Embolismo (Aéreo, Trombo, Grasa)?</li><li>¿Toxicidad por anestésicos locales (LAST)? -> Requiere Lípidos.</li><li>¿Taponamiento, Neumotórax a tensión? -> Descompresión. Utilizar ecografía diagnóstica intraoperatoria.</li></ul>" }
+                ],
+                alerts: [
+                    { type: "warning", text: "ETCO2 > 20 mmHg indica buena calidad de RCP. Un aumento súbito del ETCO2 es el primer signo de retorno a circulación espontánea (RCE)." }
+                ],
+                checklist: ["Anestésicos suspendidos", "Cirujano detenido", "Desfibrilador conectado", "Compresiones iniciadas", "Adrenalina administrada", "Causas reversibles analizadas"]
+            },
+            hemorragia: {
+                title: "Hemorragia Masiva", icon: "🩸", color: "#c1121f",
+                diagnosis: ["Sangrado quirúrgico profuso", "Hipotensión aguda y taquicardia", "Necesidad inminente de transfusión masiva"],
+                immediate: [
+                    "Avisar al cirujano para control hemostático inmediato",
+                    "Solicitar hemoderivados al Banco de Sangre (Tipo y Screen)",
+                    "Asegurar accesos venosos de gran calibre (CVC y periféricos)",
+                    "Iniciar reanimación con cristaloides isotónicos (balanceados)"
+                ],
+                steps: [
+                    { title: "1. Objetivos de Reanimación", content: "<ul><li>Mantener concentración de Hb objetivo: 7-9 g/dL.</li><li>Tomar labs cada 30 min: PT/PTT, Fibrinógeno, BH, Gasometría.</li><li>Uso de monitorización viscoelástica (ROTEM/TEG) guiada si está disponible.</li></ul>" },
+                    { title: "2. Manejo de Volumen", content: "<ul><li>Reemplazar con cristaloides isotónicos balanceados.</li><li>Precaución con coloides: Grandes infusiones pueden agravar coagulopatía dilucional.</li><li>Usar monitorización dinámica (VVS, VPP) o ecocardiografía.</li></ul>" },
+                    { title: "3. Terapia Antifibrinolítica", content: "Especialmente en cirugía ortopédica, trauma o pediátrica de alto riesgo.", drugs: [
+                        { name: "Ácido Tranexámico (TXA)", dose: "Profiláctico/Terapéutico según protocolo institucional (ej. 1g o 15-20mg/kg)." }
+                    ]}
+                ],
+                alerts: [
+                    { type: "danger", text: "El control quirúrgico del sangrado es la medida más importante. Ningún protocolo de transfusión funciona sin control mecánico." }
+                ],
+                checklist: ["Cirujano enfocado en hemostasia", "Accesos venosos gruesos asegurados", "Banco de sangre notificado", "Labs/ROTEM enviados", "TXA considerado"]
+            },
+            transfusion: {
+                title: "Protocolo Transfusión", icon: "🏥", color: "#0077b6",
+                diagnosis: ["Activación del Protocolo de Transfusión Masiva (PTM)", "Pérdida sanguínea masiva confirmada", ">4 unidades de Glóbulos Rojos requeridas"],
+                immediate: [
+                    "Llamar al Banco de Sangre: 'Activar Protocolo de Transfusión Masiva'",
+                    "Reanimación inmediata en proporción balanceada 1:1:1",
+                    "Enviar Tipo y Cruce + ROTEM/Labs c/30 min"
+                ],
+                steps: [
+                    { title: "1. Reanimación Balanceada (>4 U de GR)", content: "Aplicar si no hay ROTEM/Labs disponibles inmediatamente.", drugs: [
+                        { name: "Ronda 1", dose: "4 Unidades de Glóbulos Rojos (GR) + 4 Plasma Fresco Congelado (PFC)" },
+                        { name: "Ronda 2", dose: "8 GR + 8 PFC + 1 Dosis Plaquetas + 1 Crioprecipitados" },
+                        { name: "Ronda 3", dose: "8 GR + 8 PFC" }
+                    ]},
+                    { title: "2. Decisiones Guiadas por Laboratorio", content: "Dirigir terapia según resultados específicos:", drugs: [
+                        { name: "Hb < 7 g/dL", dose: "Transfundir 1-2 U de GR (Meta Hb 8 g/dL)" },
+                        { name: "Plaquetas < 50,000 (o A10ex < 45mm + A10fib >=13)", dose: "Transfundir 1 dosis de Plaquetas" },
+                        { name: "Fibrinógeno < 200 mg/dL", dose: "1 bolsa (5U) de Crios o 2g de Concentrado de Fibrinógeno" },
+                        { name: "Fibrinógeno < 150 mg/dL", dose: "2 bolsas (10U) de Crios o 4g de Concentrado" },
+                        { name: "PT/INR > 1.5x", dose: "Plasma Fresco Congelado: 10-15 ml/kg" }
+                    ]},
+                    { title: "3. Sangrado Refractario", content: "Si persisten problemas de coagulación a pesar de reanimación:", drugs: [
+                        { name: "Complejo Protrombínico (PCC)", dose: "10-20 U/kg (Repetir x1 si es necesario)" },
+                        { name: "Factor VIIa Recombinante (rFVIIa)", dose: "1-2 mg (Repetir 1x)" }
+                    ]}
+                ],
+                alerts: [
+                    { type: "danger", text: "Prevenir la Triada Letal: Hipotermia, Acidosis, Coagulopatía. Calentar todos los fluidos y hemoderivados." }
+                ],
+                checklist: ["Banco de sangre activado", "Relación 1:1:1 iniciada", "Calentador de fluidos encendido", "Labs y ROTEM interpretados", "Calcio corregido (vigilar citrato)"]
+            },
+            embolismo: {
+                title: "Embolismo Aéreo", icon: "🫧", color: "#457b9d",
+                diagnosis: ["Caída súbita del ETCO2", "Hipotensión abrupta", "Soplo en rueda de molino (mill-wheel murmur) a la auscultación", "Detección por ecocardiografía transesofágica (ETE) o Doppler precordial"],
+                immediate: [
+                    "Avisar al cirujano: INUNDAR el sitio quirúrgico con salino y comprimir bordes",
+                    "Identificar y cerrar la fuente de entrada de aire",
+                    "Administrar FiO2 100% (Considerar hiperbárica postoperatoria)",
+                    "Posicionar al paciente en Trendelenburg y decúbito lateral izquierdo (Posición de Durant)"
+                ],
+                steps: [
+                    { title: "1. Prevención de Mayor Entrada", content: "<ul><li>Aplicar compresión venosa yugular temporal.</li><li>Inundar campo y detener manipulación quirúrgica.</li></ul>" },
+                    { title: "2. Extracción de Aire", content: "<ul><li>Si hay Catéter Venoso Central (CVC) posicionado en aurícula derecha, intentar ASPIRAR el aire con jeringa grande.</li></ul>" },
+                    { title: "3. Soporte Hemodinámico", content: "Manejar la falla del ventrículo derecho aguda por bloqueo aéreo.", drugs: [
+                        { name: "Vasopresores/Inotrópicos", dose: "Epinefrina, Norepinefrina o Dobutamina según estado hemodinámico." },
+                        { name: "RCP", dose: "Iniciar compresiones torácicas inmediatamente si hay paro cardíaco o inestabilidad profunda (puede romper la burbuja de aire en aurícula)." }
+                    ]}
+                ],
+                alerts: [
+                    { type: "warning", text: "NO usar Óxido Nitroso (N2O). Si estaba en uso, suspenderlo inmediatamente porque expande las burbujas de aire." }
+                ],
+                checklist: ["Campo inundado", "FiO2 100% y N2O apagado", "Posición Trendelenburg / Lateral Izquierdo", "Intento de aspiración por CVC", "Soporte hemodinámico listo"]
+            },
+            anafilaxia: {
+                title: "Anafilaxia", icon: "🐝", color: "#fca311",
+                diagnosis: ["Hipotensión inexplicada severa", "Taquicardia o bradicardia", "Broncoespasmo (sibilancias pueden faltar si es severo)", "Enrojecimiento/urticaria (a menudo ausentes en quirófano)"],
+                immediate: [
+                    "PEDIR AYUDA y detener/remover cirugía no esencial",
+                    "Detener/remover gatillos sospechosos (Antibióticos, Bloqueadores Neuromusculares, Látex, Clorhexidina, Coloides)",
+                    "FiO2 100% y mantener ETCO2",
+                    "Elevar las piernas del paciente (o posición Trendelenburg)"
+                ],
+                steps: [
+                    { title: "1. Vía Aérea y Circulación", content: "<ul><li>Asegurar vía aérea. Si hay broncoespasmo persistente descartar IOT esofágica, dar Salbutamol.</li><li>La hipotensión es por vasodilatación masiva y fuga capilar.</li></ul>" },
+                    { title: "2. Tratamiento Farmacológico Inicial", content: "Administración simultánea de Adrenalina y Fluidos.", drugs: [
+                        { name: "Adrenalina (Epinefrina) IV", dose: "Adultos: Bolo IV de 50 mcg (0.5 mL de dilución 1:10,000). Niños: 1 mcg/kg." },
+                        { name: "Fluidos IV Rápidos", dose: "Adultos: Bolo de 500-1000 mL de cristaloides. Niños: 20 mL/kg. (Evitar coloides)." },
+                        { name: "Adrenalina IM (Si no hay IV)", dose: "10 mcg/kg IM (máx 500 mcg) de ampolla 1:1,000." }
+                    ]},
+                    { title: "3. Manejo Refractario", content: "Si hay pobre respuesta a los bolos iniciales:", drugs: [
+                        { name: "Infusión Adrenalina", dose: "0.5 a 1.0 mL/kg/hora de concentración 1:100,000, titula." },
+                        { name: "Vasopresor secundario", dose: "Norepinefrina o Vasopresina." },
+                        { name: "Glucagón", dose: "1 mg IV (En pacientes que toman beta-bloqueadores)." }
+                    ]}
+                ],
+                alerts: [
+                    { type: "danger", text: "Si la presión sistólica < 50 mmHg o hay paro cardíaco, iniciar RCP inmediatamente." },
+                    { type: "warning", text: "Tomar muestra de sangre para Triptasa Sérica en cuanto el paciente esté estable (1-4 horas después)." }
+                ],
+                checklist: ["Gatillos detenidos", "Ayuda solicitada", "Adrenalina IV bolo administrada", "Carga rápida de líquidos", "RCP considerada si colapso total"]
+            }
+        };
+
+        const homeView = document.getElementById('home-view');
+        const detailView = document.getElementById('detail-view');
+        const backBtn = document.getElementById('back-btn');
+        const headerTitle = document.getElementById('header-title');
+        const fabContainer = document.getElementById('fab-container');
+        const modal = document.getElementById('immediate-modal');
+        const closeBtn = document.getElementById('close-modal');
+        const modalSteps = document.getElementById('modal-steps');
+        const fabBtn = document.getElementById('fab-btn');
+
+        let currentProtocol = null;
+
+        // Render Home
+        function renderHome() {
+            homeView.innerHTML = '';
+            Object.keys(db).forEach(key => {
+                const item = db[key];
+                const card = document.createElement('div');
+                card.className = 'emergency-card';
+                card.style.setProperty('--color', item.color);
+                card.innerHTML = `
+                    <div class="icon">${item.icon}</div>
+                    <div class="title">${item.title}</div>
+                `;
+                card.onclick = () => openDetail(key);
+                homeView.appendChild(card);
+            });
+            
+            // Add Disclaimer and Signature
+            const footer = document.createElement('div');
+            footer.className = 'home-footer';
+            footer.innerHTML = `
+                <div class="disclaimer">Herramienta de referencia clínica basada en algoritmos estandarizados. Las decisiones terapéuticas y el manejo integral del paciente recaen exclusivamente en el juicio del médico tratante.</div>
+                <div class="signature">Idea original: Christian Dimas García</div>
+            `;
+            homeView.appendChild(footer);
+
+            homeView.style.display = 'grid';
+            detailView.style.display = 'none';
+            backBtn.style.display = 'none';
+            headerTitle.innerText = "Crisis Anestesia";
+            fabContainer.style.display = 'none';
+        }
+
+        // Render Detail
+        function openDetail(key) {
+            currentProtocol = db[key];
+            homeView.style.display = 'none';
+            detailView.style.display = 'block';
+            backBtn.style.display = 'inline-block';
+            headerTitle.innerText = currentProtocol.title;
+            fabContainer.style.display = 'block';
+            
+            let html = `
+                <div class="section-title" style="border-color: ${currentProtocol.color}; color: ${currentProtocol.color}">
+                    Diagnóstico Rápido
+                </div>
+                <div class="diagnosis-box" style="border-color: ${currentProtocol.color}">
+                    <ul>${currentProtocol.diagnosis.map(d => `<li>${d}</li>`).join('')}</ul>
+                </div>
+            `;
+
+            if (currentProtocol.alerts && currentProtocol.alerts.length > 0) {
+                currentProtocol.alerts.forEach(alert => {
+                    const icon = alert.type === 'danger' ? '💀' : '⚠️';
+                    const cName = alert.type === 'danger' ? 'alert-box' : 'warning-box';
+                    html += `
+                        <div class="${cName}">
+                            <span class="alert-icon">${icon}</span>
+                            <span>${alert.text}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `<div class="section-title" style="border-color: ${currentProtocol.color}; color: ${currentProtocol.color}">Protocolo de Acción</div>`;
+
+            currentProtocol.steps.forEach((step, index) => {
+                html += `
+                    <div class="step-card">
+                        <div class="step-header">
+                            <span class="step-number" style="background: ${currentProtocol.color}">${index + 1}</span>
+                            ${step.title}
+                        </div>
+                        <div class="step-content">${step.content}</div>
+                `;
+                
+                if (step.drugs) {
+                    html += `<div class="drug-grid">`;
+                    step.drugs.forEach(drug => {
+                        html += `
+                            <div class="drug-item" style="border-color: ${currentProtocol.color}">
+                                <span class="drug-name">${drug.name}</span>
+                                <span class="drug-dose">${drug.dose}</span>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            });
+
+            html += `<div class="section-title" style="border-color: ${currentProtocol.color}; color: ${currentProtocol.color}">Checklist Rápido</div>`;
+            currentProtocol.checklist.forEach((check, index) => {
+                html += `
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check-${index}">
+                        <label for="check-${index}">${check}</label>
+                    </div>
+                `;
+            });
+
+            detailView.innerHTML = html;
+        }
+
+        // Modal Logic
+        fabBtn.onclick = () => {
+            if(!currentProtocol) return;
+            modalSteps.innerHTML = currentProtocol.immediate.map(i => `<li>${i}</li>`).join('');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.style.opacity = '1', 10);
+        };
+
+        closeBtn.onclick = () => {
+            modal.style.opacity = '0';
+            setTimeout(() => modal.style.display = 'none', 200);
+        };
+
+        backBtn.onclick = renderHome;
+
+        // Init
+        renderHome();
+    </script>
+</body>
+</html>
